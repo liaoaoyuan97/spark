@@ -534,7 +534,7 @@ class DataFrameTests(ReusedSQLTestCase):
     def test_to_pandas_with_duplicated_column_names(self):
         import numpy as np
 
-        sql = "select 1 v, 1 v"
+        sql = "select 1 v, 1 v, current_timestamp() ts, current_timestamp() ts"
         for arrowEnabled in [False, True]:
             with self.sql_conf({"spark.sql.execution.arrow.pyspark.enabled": arrowEnabled}):
                 df = self.spark.sql(sql)
@@ -542,6 +542,8 @@ class DataFrameTests(ReusedSQLTestCase):
                 types = pdf.dtypes
                 self.assertEquals(types.iloc[0], np.int32)
                 self.assertEquals(types.iloc[1], np.int32)
+                self.assertTrue(np.can_cast(np.datetime64, types.iloc[2]))
+                self.assertTrue(np.can_cast(np.datetime64, types.iloc[3]))
 
     @unittest.skipIf(not have_pandas, pandas_requirement_message)  # type: ignore
     def test_to_pandas_on_cross_join(self):
